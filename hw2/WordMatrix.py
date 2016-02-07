@@ -32,8 +32,9 @@ class WordMatrix:
     '''
     Train the WordMatrix with input data
     '''
-    def train(self, inpt):
-        for line in inpt:
+    def train(self, inpt_file):
+        inpt_file.seek(0)
+        for line in inpt_file.readlines():
             tokens = line.split()
             for i in range(len(tokens)):
                 token = tokens[i]
@@ -71,15 +72,25 @@ class WordMatrix:
                 
                 vcValue = vcBuffer.get(vcWord)
                 if vcValue == None:
-                    
                     vcValue = 0
                     for iv in self.vWords.keys():
                         vcItemVal = self.vWords[iv].get(vcWord)
-                    if vcItemVal != None:
-                        vcValue += vcItemVal
+                        if vcItemVal != None:
+                            vcValue += vcItemVal
                     vcBuffer[vcWord] = vcValue
-                    
-                pmim._set(vWord, vcWord, log(float(denom) * self._get(vWord, vcWord) / (vValue * vcValue)))
+                
+                pmival = 0
+                
+                if vValue == 0 or vcValue == 0:
+                    pmival = 0
+                elif self._get(vWord,vcWord) == 0:
+                    pmival = 0
+                else:
+                    pmival = log(float(denom) * self._get(vWord, vcWord) / (vValue * vcValue))
+                if pmival < 0:
+                    pmival = 0
+                
+                pmim._set(vWord, vcWord, pmival)
         return pmim
     
     
