@@ -26,15 +26,15 @@ object Main extends App {
       });
     }
   }
-  var input = "res/wiki-0.1percent.txt"
-
+  var input = "res/wiki-2percent.txt"
+/*
   var wc10k = new DefaultWordMatrix(4);
   wc10k.init("res/vocab-15k.txt", "res/vocab-10k.txt")
   wc10k.train(input)
   eval("Result for 10K count", wc10k)
   var pmi10k = wc10k.pmi()
   eval("Result for 10K", pmi10k)
-
+*/
   var wc3k = new DefaultWordMatrix(4);
   wc3k.init("res/vocab-15k.txt", "res/vocab-3k.txt")
   wc3k.train(input)
