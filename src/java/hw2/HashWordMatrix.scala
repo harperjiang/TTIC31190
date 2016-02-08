@@ -7,7 +7,7 @@ import scala.collection.mutable.PriorityQueue
 import scala.collection.mutable.Queue
 import java.util.Collections
 
-class DefaultWordMatrix(windowSize: Int) extends WordMatrix {
+class HashWordMatrix(windowSize: Int) extends WordMatrix {
 
   var matrix = new HashMap[String, HashMap[String, BigDecimal]]();
 
@@ -26,7 +26,11 @@ class DefaultWordMatrix(windowSize: Int) extends WordMatrix {
   }
 
   def train(inputPath: String) = {
+    var counter = 0;
     Source.fromFile(inputPath).getLines().foreach(line => {
+      counter += 1;
+      if (counter % 10000 == 0)
+        System.out.println(counter);
       var tokens = line.split("\\s");
       for (i <- 0 to tokens.length - 1) {
         var word = tokens(i);
@@ -87,7 +91,7 @@ class DefaultWordMatrix(windowSize: Int) extends WordMatrix {
   }
 
   def pmi(): WordMatrix = {
-    var pmim = new DefaultWordMatrix(0);
+    var pmim = new HashWordMatrix(0);
     var denom = BigDecimal(0);
 
     this.matrix.map(kv => {
@@ -101,13 +105,11 @@ class DefaultWordMatrix(windowSize: Int) extends WordMatrix {
 
     this.matrix.map(vkey => {
       var vword = vkey._1;
-
-      vkey._2.map(vckey => {
-        var vcword = vckey._1
-
-        var vValue = vBuffer.getOrElseUpdate(vword, {
+      var vValue = vBuffer.getOrElseUpdate(vword, {
           vkey._2.map(_._2).sum
         });
+      vkey._2.map(vckey => {
+        var vcword = vckey._1
 
         var vcValue = vcBuffer.getOrElseUpdate(vcword, {
           matrix.map(_._2.getOrElse(vcword, BigDecimal(0))).sum

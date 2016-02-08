@@ -28,6 +28,7 @@ object Main extends App {
   }
   var input = "res/wiki-0.1percent.txt"
 
+  /*
   var wc10k = new DefaultWordMatrix(4);
   wc10k.init("res/vocab-15k.txt", "res/vocab-10k.txt")
   wc10k.train(input)
@@ -58,4 +59,20 @@ object Main extends App {
   wc15w.train(input)
   var pmi15w = wc15w.pmi();
   eval("Result for Window 15", pmi15w)
+  * /
+  */
+  System.out.println(System.currentTimeMillis());
+  var wcnormal = new ArrayWordMatrix(8);
+  wcnormal.init("res/vocab-15k.txt", "res/vocab-10k.txt")
+  wcnormal.train(input)
+  System.out.println(System.currentTimeMillis());
+  var pminormal = wcnormal.pmi()
+  System.out.println(System.currentTimeMillis());
+  eval("Result for normal", pminormal)
+
+  var wcweight = new CenterWordMatrix(8, i => { if (i > BigDecimal(8)) BigDecimal(0) else BigDecimal(8 - i) });
+  wcweight.init("res/vocab-15k.txt", "res/vocab-10k.txt")
+  wcweight.train(input)
+  var pmiweight = wcweight.pmi()
+  eval("Result for weight", pmiweight)
 }

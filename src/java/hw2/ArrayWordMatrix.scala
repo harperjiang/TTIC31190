@@ -1,17 +1,17 @@
 package hw2
 
+import scala.BigDecimal
+import scala.Ordering
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.HashSet
-import scala.io.Source
 import scala.collection.mutable.PriorityQueue
-import scala.collection.mutable.Queue
-import java.util.Collections
+import scala.io.Source
 
-class LRWordMatrix(windowSize: Int) extends WordMatrix {
+class ArrayWordMatrix(windowSize: Int) extends WordMatrix {
 
   var rows = new HashMap[String, Int]();
   var columns = new HashMap[String, Int]();
-  var array = Array.ofDim[(BigDecimal, BigDecimal)](0, 0)
+  var array = Array.ofDim[BigDecimal](0, 0)
 
   def init(rowPath: String, columnPath: String) = {
     rows.clear
@@ -28,7 +28,7 @@ class LRWordMatrix(windowSize: Int) extends WordMatrix {
       counter += 1
     });
 
-    array = Array.fill[(BigDecimal, BigDecimal)](rows.size, columns.size)((BigDecimal(0), BigDecimal(0)))
+    array = Array.fill[BigDecimal](rows.size, columns.size)(BigDecimal(0))
   }
 
   def train(inputPath: String) = {
@@ -41,16 +41,16 @@ class LRWordMatrix(windowSize: Int) extends WordMatrix {
       for (i <- 0 to tokens.length - 1) {
         var word = tokens(i);
         if (i < windowSize) {
-          linc(word, startSymbol);
+          inc(word, startSymbol);
         }
         for (j <- 0 to i - 1) {
-          linc(word, tokens(j))
+          inc(word, tokens(j))
         }
         if (i >= tokens.length - windowSize) {
-          rinc(word, stopSymbol);
+          inc(word, stopSymbol);
         }
         for (j <- i + 1 to tokens.length - 1) {
-          rinc(word, tokens(j));
+          inc(word, tokens(j));
         }
       }
     });
@@ -87,9 +87,9 @@ class LRWordMatrix(windowSize: Int) extends WordMatrix {
     for (i <- 0 to columns.size - 1) {
       var va = array(aIndex)(i)
       var vb = array(bIndex)(i)
-      dotprod += va._1 * vb._1 + va._2 + vb._2;
-      vasum2 += va._1.pow(2) + va._2.pow(2)
-      vbsum2 += vb._1.pow(2) + vb._2.pow(2);
+      dotprod += va * vb;
+      vasum2 += va.pow(2)
+      vbsum2 += vb.pow(2);
     }
 
     if (vasum2 == BigDecimal(0) || vbsum2 == BigDecimal(0))
@@ -98,31 +98,29 @@ class LRWordMatrix(windowSize: Int) extends WordMatrix {
   }
 
   def pmi(): WordMatrix = {
-    var pmim = new LRWordMatrix(0);
+    var pmim = new ArrayWordMatrix(0);
     pmim.rows = this.rows;
     pmim.columns = this.columns;
     pmim.array = this.array.clone
-
+    
     var denom = BigDecimal(0);
 
     for (i <- 0 to rows.size - 1) {
       for (j <- 0 to columns.size - 1) {
-        denom += array(i)(j)._1 + array(i)(j)._2;
+        denom += array(i)(j);
       }
     }
 
     var vBuffer = Array.ofDim[BigDecimal](rows.size);
-    var vcBuffer1 = Array.fill[BigDecimal](columns.size)(BigDecimal(0));
-    var vcBuffer2 = Array.fill[BigDecimal](columns.size)(BigDecimal(0));
+    var vcBuffer = Array.fill[BigDecimal](columns.size)(BigDecimal(0));
 
     for (i <- 0 to rows.size - 1) {
-      vBuffer(i) = array(i).map(s => s._1 + s._2).sum
+      vBuffer(i) = array(i).sum
     }
 
     for (i <- 0 to columns.size - 1) {
       for (j <- 0 to rows.size - 1) {
-        vcBuffer1(i) += array(j)(i)._1
-        vcBuffer2(i) += array(j)(i)._2
+        vcBuffer(i) += array(j)(i)
       }
     }
 
@@ -134,24 +132,15 @@ class LRWordMatrix(windowSize: Int) extends WordMatrix {
       this.columns.map(vckey => {
         var vcword = vckey._1
         var vcIndex = vckey._2
-        var vcValue1 = vcBuffer1(vcIndex);
-        var vcValue2 = vcBuffer2(vcIndex);
+        var vcValue = vcBuffer(vcIndex);
 
-        var pmivalue1 = BigDecimal(0)
-        if (vckey._2 != BigDecimal(0) && vValue != BigDecimal(0) && vcValue1 != BigDecimal(0)) {
-          pmivalue1 = BigDecimal(Math.log((vckey._2 * denom).doubleValue) - Math.log((vValue * vcValue1).doubleValue));
-          if (pmivalue1 < BigDecimal(0))
-            pmivalue1 = BigDecimal(0);
+        var pmivalue = BigDecimal(0)
+        if (vckey._2 != BigDecimal(0) && vValue != BigDecimal(0) && vcValue != BigDecimal(0)) {
+          pmivalue = BigDecimal(Math.log((vckey._2 * denom).doubleValue) - Math.log((vValue * vcValue).doubleValue));
+          if (pmivalue < BigDecimal(0))
+            pmivalue = BigDecimal(0);
         }
-
-        var pmivalue2 = BigDecimal(0)
-        if (vckey._2 != BigDecimal(0) && vValue != BigDecimal(0) && vcValue2 != BigDecimal(0)) {
-          pmivalue2 = BigDecimal(Math.log((vckey._2 * denom).doubleValue) - Math.log((vValue * vcValue2).doubleValue));
-          if (pmivalue2 < BigDecimal(0))
-            pmivalue2 = BigDecimal(0);
-        }
-
-        pmim.set(vword, vcword, (pmivalue1, pmivalue2));
+        pmim.set(vword, vcword, pmivalue);
       })
     });
     return pmim;
@@ -161,25 +150,15 @@ class LRWordMatrix(windowSize: Int) extends WordMatrix {
     return rows.keySet
   }
 
-  def linc(vWord: String, vcWord: String)(implicit value: BigDecimal = BigDecimal(1)): Unit = {
+  def inc(vWord: String, vcWord: String)(implicit value: BigDecimal = BigDecimal(1)): Unit = {
     var rowIndex = rows.getOrElse(vWord, -1)
     var colIndex = columns.getOrElse(vcWord, -1)
     if (rowIndex == -1 || colIndex == -1)
       return
-    var oldval = array(rowIndex)(colIndex)
-    array(rowIndex)(colIndex) = (oldval._1 + value, oldval._2)
+    array(rowIndex)(colIndex) += value
   }
 
-  def rinc(vWord: String, vcWord: String)(implicit value: BigDecimal = BigDecimal(1)): Unit = {
-    var rowIndex = rows.getOrElse(vWord, -1)
-    var colIndex = columns.getOrElse(vcWord, -1)
-    if (rowIndex == -1 || colIndex == -1)
-      return
-    var oldval = array(rowIndex)(colIndex)
-    array(rowIndex)(colIndex) = (oldval._1, oldval._2 + value)
-  }
-
-  def set(vWord: String, vcWord: String, value: (BigDecimal, BigDecimal)): Unit = {
+  def set(vWord: String, vcWord: String, value: BigDecimal): Unit = {
     var rowIndex = rows.getOrElse(vWord, -1)
     var colIndex = columns.getOrElse(vcWord, -1)
     if (rowIndex == -1 || colIndex == -1)
