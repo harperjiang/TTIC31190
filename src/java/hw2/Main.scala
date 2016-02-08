@@ -1,17 +1,21 @@
 package hw2
 
 import scala.util.Random
+import java.io.PrintWriter
+import java.io.FileOutputStream
 
 object Main extends App {
 
   var sampleWords = List("people", "flew", "transported", "quickly", "good", "python", "apple", "red", "chicago", "language");
 
-  def eval(title: String, wordmatrix: WordMatrix) = {
+  def eval(title: String, out:PrintWriter, wordmatrix: WordMatrix) = {
     System.out.println(title);
+    output.println(title);
     sampleWords.map(word => {
       System.out.println(word);
       wordmatrix.eval(word, 10).map(result => {
         System.out.println(result);
+        out.println(result);
       });
     });
 
@@ -22,12 +26,14 @@ object Main extends App {
       var word = rlist(random.nextInt(rlist.size))
       System.out.println(word);
       wordmatrix.eval(word, 10).map(result => {
+        out.println(result);
         System.out.println(result);
       });
     }
   }
 
   var input = "res/wiki-2percent.txt"
+  var output = new PrintWriter(new FileOutputStream("output"));
 /*
   var wc10k = new DefaultWordMatrix(4);
   wc10k.init("res/vocab-15k.txt", "res/vocab-10k.txt")
@@ -40,25 +46,25 @@ object Main extends App {
   wc3k.init("res/vocab-15k.txt", "res/vocab-3k.txt")
   wc3k.train(input)
   var pmi3k = wc3k.pmi()
-  eval("Result for 3K", pmi3k)
+  eval("Result for 3K",output, pmi3k)
 
   var wcr3k = new ArrayWordMatrix(4);
   wcr3k.init("res/vocab-15k.txt", "res/vocab-rare3k.txt")
   wcr3k.train(input)
   var pmir3k = wcr3k.pmi()
-  eval("Result for Rare 3K", pmir3k)
+  eval("Result for Rare 3K",output, pmir3k)
 
   var wc1w = new ArrayWordMatrix(1);
   wc1w.init("res/vocab-15k.txt", "res/vocab-10k.txt")
   wc1w.train(input)
   var pmi1w = wc1w.pmi();
-  eval("Result for Window 1", pmi1w)
+  eval("Result for Window 1",output, pmi1w)
 
   var wc15w = new ArrayWordMatrix(15);
   wc15w.init("res/vocab-15k.txt", "res/vocab-10k.txt")
   wc15w.train(input)
   var pmi15w = wc15w.pmi();
-  eval("Result for Window 15", pmi15w)
+  eval("Result for Window 15",output, pmi15w)
   
 
   System.out.println(System.currentTimeMillis());
@@ -68,11 +74,11 @@ object Main extends App {
   System.out.println(System.currentTimeMillis());
   var pminormal = wcnormal.pmi()
   System.out.println(System.currentTimeMillis());
-  eval("Result for normal", pminormal)
+  eval("Result for normal",output, pminormal)
 
   var wcweight = new CenterWordMatrix(8, i => { if (i > BigDecimal(8)) BigDecimal(0) else BigDecimal(8 - i) });
   wcweight.init("res/vocab-15k.txt", "res/vocab-10k.txt")
   wcweight.train(input)
   var pmiweight = wcweight.pmi()
-  eval("Result for weight", pmiweight)
+  eval("Result for weight",output, pmiweight)
 }
