@@ -2,7 +2,7 @@ package hw2
 
 import scala.io.Source
 
-class CenterWordMatrix(windowSize: Int, weight: (Int => Int)) extends DefaultWordMatrix(windowSize) {
+class CenterWordMatrix(windowSize: Int, weight: (Int => BigDecimal)) extends ArrayWordMatrix(windowSize) {
 
   override def train(inputPath: String) = {
     Source.fromFile(inputPath).getLines().foreach(line => {

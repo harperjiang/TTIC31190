@@ -26,6 +26,7 @@ object Main extends App {
       });
     }
   }
+
   var input = "res/wiki-2percent.txt"
 /*
   var wc10k = new DefaultWordMatrix(4);
@@ -35,27 +36,43 @@ object Main extends App {
   var pmi10k = wc10k.pmi()
   eval("Result for 10K", pmi10k)
 */
-  var wc3k = new DefaultWordMatrix(4);
+  var wc3k = new ArrayWordMatrix(4);
   wc3k.init("res/vocab-15k.txt", "res/vocab-3k.txt")
   wc3k.train(input)
   var pmi3k = wc3k.pmi()
   eval("Result for 3K", pmi3k)
 
-  var wcr3k = new DefaultWordMatrix(4);
+  var wcr3k = new ArrayWordMatrix(4);
   wcr3k.init("res/vocab-15k.txt", "res/vocab-rare3k.txt")
   wcr3k.train(input)
   var pmir3k = wcr3k.pmi()
   eval("Result for Rare 3K", pmir3k)
 
-  var wc1w = new DefaultWordMatrix(1);
+  var wc1w = new ArrayWordMatrix(1);
   wc1w.init("res/vocab-15k.txt", "res/vocab-10k.txt")
   wc1w.train(input)
   var pmi1w = wc1w.pmi();
   eval("Result for Window 1", pmi1w)
 
-  var wc15w = new DefaultWordMatrix(15);
+  var wc15w = new ArrayWordMatrix(15);
   wc15w.init("res/vocab-15k.txt", "res/vocab-10k.txt")
   wc15w.train(input)
   var pmi15w = wc15w.pmi();
   eval("Result for Window 15", pmi15w)
+  
+
+  System.out.println(System.currentTimeMillis());
+  var wcnormal = new ArrayWordMatrix(8);
+  wcnormal.init("res/vocab-15k.txt", "res/vocab-10k.txt")
+  wcnormal.train(input)
+  System.out.println(System.currentTimeMillis());
+  var pminormal = wcnormal.pmi()
+  System.out.println(System.currentTimeMillis());
+  eval("Result for normal", pminormal)
+
+  var wcweight = new CenterWordMatrix(8, i => { if (i > BigDecimal(8)) BigDecimal(0) else BigDecimal(8 - i) });
+  wcweight.init("res/vocab-15k.txt", "res/vocab-10k.txt")
+  wcweight.train(input)
+  var pmiweight = wcweight.pmi()
+  eval("Result for weight", pmiweight)
 }
