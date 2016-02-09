@@ -57,7 +57,7 @@ class HashWordMatrix(windowSize: Int) extends WordMatrix {
         var item = (this.similarity(refword, word), word)
         if (item._1 != null) {
           heap.enqueue(item)
-          while (heap.size >= topn) {
+          while (heap.size > topn) {
             heap.dequeue
           }
         }

@@ -32,11 +32,7 @@ class ArrayWordMatrix(windowSize: Int) extends WordMatrix {
   }
 
   def train(inputPath: String) = {
-    var counter = 0;
     Source.fromFile(inputPath).getLines().foreach(line => {
-      counter += 1;
-      if (counter % 10000 == 0)
-        System.out.println(counter);
       var tokens = line.split("\\s");
       for (i <- 0 to tokens.length - 1) {
         var word = tokens(i);
@@ -64,7 +60,7 @@ class ArrayWordMatrix(windowSize: Int) extends WordMatrix {
         var item = (this.similarity(refword, word), word)
         if (item._1 != null) {
           heap.enqueue(item)
-          while (heap.size >= topn) {
+          while (heap.size > topn) {
             heap.dequeue
           }
         }
