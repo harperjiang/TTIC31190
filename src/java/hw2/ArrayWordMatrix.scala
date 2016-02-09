@@ -102,7 +102,7 @@ class ArrayWordMatrix(windowSize: Int) extends WordMatrix {
     pmim.rows = this.rows;
     pmim.columns = this.columns;
     pmim.array = this.array.clone
-    
+
     var denom = BigDecimal(0);
 
     for (i <- 0 to rows.size - 1) {
@@ -135,8 +135,8 @@ class ArrayWordMatrix(windowSize: Int) extends WordMatrix {
         var vcValue = vcBuffer(vcIndex);
 
         var pmivalue = BigDecimal(0)
-        if (vckey._2 != BigDecimal(0) && vValue != BigDecimal(0) && vcValue != BigDecimal(0)) {
-          pmivalue = BigDecimal(Math.log((vckey._2 * denom).doubleValue) - Math.log((vValue * vcValue).doubleValue));
+        if (array(vIndex)(vcIndex) != BigDecimal(0) && vValue != BigDecimal(0) && vcValue != BigDecimal(0)) {
+          pmivalue = BigDecimal(Math.log((array(vIndex)(vcIndex) * denom).doubleValue) - Math.log((vValue * vcValue).doubleValue));
           if (pmivalue < BigDecimal(0))
             pmivalue = BigDecimal(0);
         }
